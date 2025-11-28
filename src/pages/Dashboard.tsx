@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
+import NewCaseDialog from '@/components/NewCaseDialog';
+import CalendarView from '@/components/CalendarView';
+import FinancesView from '@/components/FinancesView';
 
 type CaseStatus = 'active' | 'pending' | 'completed' | 'archived';
 type CasePriority = 'high' | 'medium' | 'low';
@@ -129,10 +131,7 @@ const Dashboard = () => {
                 <p className="text-sm text-slate-500">Управление судебными делами</p>
               </div>
             </div>
-            <Button className="gap-2">
-              <Icon name="Plus" size={18} />
-              Новое дело
-            </Button>
+            <NewCaseDialog clients={mockClients} />
           </div>
         </div>
       </div>
@@ -214,6 +213,14 @@ const Dashboard = () => {
             <TabsTrigger value="clients" className="gap-2">
               <Icon name="Users" size={16} />
               Клиенты
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="gap-2">
+              <Icon name="Calendar" size={16} />
+              Календарь
+            </TabsTrigger>
+            <TabsTrigger value="finances" className="gap-2">
+              <Icon name="Wallet" size={16} />
+              Финансы
             </TabsTrigger>
           </TabsList>
 
@@ -380,6 +387,14 @@ const Dashboard = () => {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="calendar">
+            <CalendarView />
+          </TabsContent>
+
+          <TabsContent value="finances">
+            <FinancesView />
           </TabsContent>
         </Tabs>
       </div>
