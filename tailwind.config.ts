@@ -1,33 +1,5 @@
 import type { Config } from "tailwindcss";
 
-function addVariablesForColors({ addBase, theme }: any) {
-	const allColors = theme("colors");
-	const flattenedColors: Record<string, string> = {};
-
-	const flatten = (colors: any, prefix = ""): void => {
-		Object.keys(colors).forEach((key) => {
-			const value = colors[key];
-			const newKey = prefix ? `${prefix}-${key}` : key;
-
-			if (typeof value === "string") {
-				flattenedColors[newKey] = value;
-			} else if (typeof value === "object") {
-				flatten(value, newKey);
-			}
-		});
-	};
-
-	flatten(allColors);
-
-	const newVars = Object.fromEntries(
-		Object.entries(flattenedColors).map(([key, val]) => [`--${key}`, val])
-	);
-
-	addBase({
-		":root": newVars
-	});
-}
-
 export default {
 	darkMode: ["class"],
 	content: [
@@ -124,24 +96,15 @@ export default {
 				'scale-in': {
 					'0%': { transform: 'scale(0.95)', opacity: '0' },
 					'100%': { transform: 'scale(1)', opacity: '1' }
-				},
-				aurora: {
-					from: {
-						backgroundPosition: '50% 50%, 50% 50%'
-					},
-					to: {
-						backgroundPosition: '350% 50%, 350% 50%'
-					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.3s ease-out',
-				'scale-in': 'scale-in 0.2s ease-out',
-				aurora: 'aurora 60s linear infinite'
+				'scale-in': 'scale-in 0.2s ease-out'
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate"), addVariablesForColors],
+	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
