@@ -6,6 +6,9 @@ import Icon from '@/components/ui/icon';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import NewCaseDialog from '@/components/NewCaseDialog';
+import NewClientDialog from '@/components/NewClientDialog';
+import EditCaseDialog from '@/components/EditCaseDialog';
+import EditClientDialog from '@/components/EditClientDialog';
 import CalendarView from '@/components/CalendarView';
 import FinancesView from '@/components/FinancesView';
 
@@ -306,6 +309,16 @@ const Dashboard = () => {
                         <Badge className={statusConfig[caseItem.status]?.color || 'bg-gray-500'}>
                           {statusConfig[caseItem.status]?.label || caseItem.status}
                         </Badge>
+                        <EditCaseDialog
+                          caseData={caseItem}
+                          clients={clients}
+                          onSuccess={fetchData}
+                          trigger={
+                            <Button variant="ghost" size="icon">
+                              <Icon name="Edit" size={16} />
+                            </Button>
+                          }
+                        />
                       </div>
                     </div>
                   ))}
@@ -350,6 +363,15 @@ const Dashboard = () => {
                             </Badge>
                           </div>
                         </div>
+                        <EditClientDialog
+                          client={client}
+                          onSuccess={fetchData}
+                          trigger={
+                            <Button variant="ghost" size="icon">
+                              <Icon name="Edit" size={16} />
+                            </Button>
+                          }
+                        />
                       </div>
                       <div className="space-y-2 text-sm text-slate-600">
                         {client.contact_info?.phones?.[0] && (
