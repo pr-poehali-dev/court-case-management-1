@@ -29,7 +29,7 @@ const Landing = () => {
             <Icon name="Scale" size={32} className="text-white" />
           </div>
           <h1 className="text-5xl md:text-7xl font-bold text-slate-900 dark:text-white">
-            ЮристПро
+            Суть Дела
           </h1>
         </motion.div>
 
