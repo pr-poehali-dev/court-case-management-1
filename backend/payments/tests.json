@@ -1,0 +1,32 @@
+{
+  "tests": [
+    {
+      "name": "Get all payments",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": [],
+      "bodyMatcher": "type"
+    },
+    {
+      "name": "Create payment",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "case_id": 1,
+        "client_id": 1,
+        "amount": 50000,
+        "date": "2024-12-12",
+        "purpose": "Оплата за услуги",
+        "document_number": "ПП-001",
+        "status": "получено"
+      },
+      "expectedStatus": 201,
+      "expectedBody": {
+        "id": "number",
+        "amount": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

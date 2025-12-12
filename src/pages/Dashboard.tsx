@@ -10,6 +10,7 @@ import NewCaseDialog from '@/components/NewCaseDialog';
 import NewClientDialog from '@/components/NewClientDialog';
 import EditCaseDialog from '@/components/EditCaseDialog';
 import EditClientDialog from '@/components/EditClientDialog';
+import AddPaymentDialog from '@/components/AddPaymentDialog';
 import CalendarView from '@/components/CalendarView';
 import FinancesView from '@/components/FinancesView';
 
@@ -118,7 +119,10 @@ const Dashboard = () => {
                 <p className="text-sm text-slate-500">Управление судебными делами</p>
               </div>
             </div>
-            <NewCaseDialog clients={clients} onSuccess={fetchData} />
+            <div className="flex items-center gap-3">
+              <NewClientDialog onSuccess={fetchData} />
+              <NewCaseDialog clients={clients} onSuccess={fetchData} />
+            </div>
           </div>
         </div>
       </div>
@@ -310,16 +314,28 @@ const Dashboard = () => {
                         <Badge className={statusConfig[caseItem.status]?.color || 'bg-gray-500'}>
                           {statusConfig[caseItem.status]?.label || caseItem.status}
                         </Badge>
-                        <EditCaseDialog
-                          caseData={caseItem}
-                          clients={clients}
-                          onSuccess={fetchData}
-                          trigger={
-                            <Button variant="ghost" size="icon">
-                              <Icon name="Edit" size={16} />
-                            </Button>
-                          }
-                        />
+                        <div className="flex items-center gap-2">
+                          <AddPaymentDialog
+                            caseId={caseItem.id}
+                            clientId={caseItem.client_id}
+                            onSuccess={fetchData}
+                            trigger={
+                              <Button variant="ghost" size="icon" title="Добавить оплату">
+                                <Icon name="DollarSign" size={16} />
+                              </Button>
+                            }
+                          />
+                          <EditCaseDialog
+                            caseData={caseItem}
+                            clients={clients}
+                            onSuccess={fetchData}
+                            trigger={
+                              <Button variant="ghost" size="icon" title="Редактировать">
+                                <Icon name="Edit" size={16} />
+                              </Button>
+                            }
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}
