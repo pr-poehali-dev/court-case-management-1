@@ -8,27 +8,35 @@ import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { toast } from '@/components/ui/use-toast';
 
-interface NewCaseDialogProps {
-  clients: Array<{ id: string; name: string; type: string }>;
+interface Client {
+  id: number;
+  type: 'физическое' | 'юридическое';
+  full_name?: string;
+  company_name?: string;
 }
 
-const NewCaseDialog = ({ clients }: NewCaseDialogProps) => {
+interface NewCaseDialogProps {
+  clients: Client[];
+  onSuccess?: () => void;
+}
+
+const NewCaseDialog = ({ clients, onSuccess }: NewCaseDialogProps) => {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
-    client: '',
-    category: '',
-    priority: 'medium',
-    status: 'pending',
-    budget: '',
-    nextHearing: '',
+    client_id: '',
+    type: '',
+    status: 'открыто',
+    internal_number: '',
+    external_number: '',
     description: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.client || !formData.category) {
+    if (!formData.title || !formData.type || !formData.internal_number) {
       toast({
         title: 'Ошибка',
         description: 'Заполните все обязательные поля',
@@ -37,22 +45,52 @@ const NewCaseDialog = ({ clients }: NewCaseDialogProps) => {
       return;
     }
 
-    toast({
-      title: 'Дело создано',
-      description: `Дело "${formData.title}" успешно добавлено в систему`,
-    });
-    
-    setOpen(false);
-    setFormData({
-      title: '',
-      client: '',
-      category: '',
-      priority: 'medium',
-      status: 'pending',
-      budget: '',
-      nextHearing: '',
-      description: ''
-    });
+    setLoading(true);
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/196ef5ca-dd1d-4d1f-ae2e-e95a90b5b8e1', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          client_id: formData.client_id ? parseInt(formData.client_id) : null
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Дело создано',
+          description: `Дело "${formData.title}" успешно добавлено в систему`,
+        });
+        
+        setOpen(false);
+        setFormData({
+          title: '',
+          client_id: '',
+          type: '',
+          status: 'открыто',
+          internal_number: '',
+          external_number: '',
+          description: ''
+        });
+        
+        if (onSuccess) {
+          onSuccess();
+        }
+      } else {
+        throw new Error('Ошибка создания дела');
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось создать дело',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -87,19 +125,39 @@ const NewCaseDialog = ({ clients }: NewCaseDialogProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="client" className="flex items-center gap-1">
-                Клиент <span className="text-red-500">*</span>
+              <Label htmlFor="internal_number" className="flex items-center gap-1">
+                Внутренний номер <span className="text-red-500">*</span>
               </Label>
-              <Select value={formData.client} onValueChange={(value) => setFormData({ ...formData, client: value })}>
-                <SelectTrigger id="client">
+              <Input
+                id="internal_number"
+                placeholder="Например: ДЛ-2024-001"
+                value={formData.internal_number}
+                onChange={(e) => setFormData({ ...formData, internal_number: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="external_number">Номер дела в суде</Label>
+              <Input
+                id="external_number"
+                placeholder="Например: А40-12345/24"
+                value={formData.external_number}
+                onChange={(e) => setFormData({ ...formData, external_number: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="client_id">Клиент</Label>
+              <Select value={formData.client_id} onValueChange={(value) => setFormData({ ...formData, client_id: value })}>
+                <SelectTrigger id="client_id">
                   <SelectValue placeholder="Выберите клиента" />
                 </SelectTrigger>
                 <SelectContent>
                   {clients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
+                    <SelectItem key={client.id} value={client.id.toString()}>
                       <div className="flex items-center gap-2">
-                        <Icon name={client.type === 'corporate' ? 'Building2' : 'User'} size={14} />
-                        {client.name}
+                        <Icon name={client.type === 'юридическое' ? 'Building2' : 'User'} size={14} />
+                        {client.type === 'юридическое' ? client.company_name : client.full_name}
                       </div>
                     </SelectItem>
                   ))}
@@ -108,49 +166,20 @@ const NewCaseDialog = ({ clients }: NewCaseDialogProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category" className="flex items-center gap-1">
-                Категория <span className="text-red-500">*</span>
+              <Label htmlFor="type" className="flex items-center gap-1">
+                Тип дела <span className="text-red-500">*</span>
               </Label>
-              <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="Выберите категорию" />
+              <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+                <SelectTrigger id="type">
+                  <SelectValue placeholder="Выберите тип" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="arbitrage">Арбитраж</SelectItem>
-                  <SelectItem value="civil">Гражданские дела</SelectItem>
-                  <SelectItem value="labor">Трудовые споры</SelectItem>
-                  <SelectItem value="corporate">Корпоративное право</SelectItem>
-                  <SelectItem value="administrative">Административные дела</SelectItem>
-                  <SelectItem value="criminal">Уголовные дела</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="priority">Приоритет</Label>
-              <Select value={formData.priority} onValueChange={(value) => setFormData({ ...formData, priority: value })}>
-                <SelectTrigger id="priority">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="high">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-red-500" />
-                      Высокий
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="medium">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-orange-500" />
-                      Средний
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="low">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500" />
-                      Низкий
-                    </div>
-                  </SelectItem>
+                  <SelectItem value="Гражданское">Гражданское</SelectItem>
+                  <SelectItem value="Арбитраж">Арбитраж</SelectItem>
+                  <SelectItem value="Уголовное">Уголовное</SelectItem>
+                  <SelectItem value="Претензионная работа">Претензионная работа</SelectItem>
+                  <SelectItem value="Медиация">Медиация</SelectItem>
+                  <SelectItem value="Консультация">Консультация</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -162,33 +191,13 @@ const NewCaseDialog = ({ clients }: NewCaseDialogProps) => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">Ожидание</SelectItem>
-                  <SelectItem value="active">В работе</SelectItem>
-                  <SelectItem value="completed">Завершено</SelectItem>
-                  <SelectItem value="archived">Архив</SelectItem>
+                  <SelectItem value="открыто">Открыто</SelectItem>
+                  <SelectItem value="в работе">В работе</SelectItem>
+                  <SelectItem value="на паузе">На паузе</SelectItem>
+                  <SelectItem value="завершено">Завершено</SelectItem>
+                  <SelectItem value="архив">Архив</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="budget">Бюджет (₽)</Label>
-              <Input
-                id="budget"
-                type="number"
-                placeholder="500000"
-                value={formData.budget}
-                onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="nextHearing">Ближайшее заседание</Label>
-              <Input
-                id="nextHearing"
-                type="date"
-                value={formData.nextHearing}
-                onChange={(e) => setFormData({ ...formData, nextHearing: e.target.value })}
-              />
             </div>
 
             <div className="space-y-2 md:col-span-2">
@@ -205,12 +214,21 @@ const NewCaseDialog = ({ clients }: NewCaseDialogProps) => {
           </div>
 
           <div className="flex gap-3 justify-end pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               Отмена
             </Button>
-            <Button type="submit" className="gap-2">
-              <Icon name="Save" size={18} />
-              Создать дело
+            <Button type="submit" className="gap-2" disabled={loading}>
+              {loading ? (
+                <>
+                  <Icon name="Loader2" size={18} className="animate-spin" />
+                  Создание...
+                </>
+              ) : (
+                <>
+                  <Icon name="Save" size={18} />
+                  Создать дело
+                </>
+              )}
             </Button>
           </div>
         </form>

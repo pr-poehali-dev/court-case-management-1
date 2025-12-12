@@ -1,0 +1,32 @@
+{
+  "tests": [
+    {
+      "name": "Get all clients",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": [],
+      "bodyMatcher": "type"
+    },
+    {
+      "name": "Create individual client",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "type": "физическое",
+        "full_name": "Иванов Иван Иванович",
+        "contact_info": {
+          "phones": ["+79991234567"],
+          "emails": ["ivanov@example.com"]
+        },
+        "address": "г. Москва"
+      },
+      "expectedStatus": 201,
+      "expectedBody": {
+        "id": "number",
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
